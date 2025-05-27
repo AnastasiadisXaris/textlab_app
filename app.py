@@ -1,13 +1,17 @@
+# app.py
 import streamlit as st
-from utils import analyze_text, compare_texts, cluster_texts, extract_keywords
+import pandas as pd
+from utils import analyze_text, compare_texts, cluster_texts, extract_keywords, fetch_reddit_posts
 
 st.set_page_config(page_title="TextLab", layout="wide")
-st.title("🔍 Ανάλυση κειμένου & Επεξεργασία Φυσικής Γλώσσας")
+st.title("🔍 TextLab - Ανάλυση Κειμένου & Επεξεργασία Φυσικής Γλώσσας")
 
-# Επιλογή γλώσσας
 lang = st.radio("Επέλεξε γλώσσα κειμένου:", options=["Ελληνικά", "Αγγλικά"])
 
-tab1, tab2, tab3, tab4 = st.tabs(["📄 Ανάλυση Κειμένου", "🆚 Σύγκριση", "🔗 Clustering", "🧠 Λέξεις-Κλειδιά"])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    "📄 Ανάλυση Κειμένου", "🆚 Σύγκριση", "🔗 Clustering",
+    "🧠 Λέξεις-Κλειδιά", "📂 CSV Ανάλυση", "🔍 Reddit Εξαγωγή"
+])
 
 with tab1:
     text_input = st.text_area("Εισήγαγε κείμενο:", height=200)
@@ -55,3 +59,30 @@ with tab4:
             st.write(keywords)
         else:
             st.warning("Εισήγαγε κάποιο κείμενο.")
+
+with tab5:
+    uploaded_file = st.file_uploader("📂 Ανέβασε CSV αρχείο", type="csv")
+    if uploaded_file:
+        df = pd.read_csv(uploaded_file)
+        col = st.selectbox("Επέλεξε στήλη με κείμενα:", df.columns)
+        if st.button("Ανάλυση CSV"):
+            with st.spinner("Ανάλυση..."):
+                for idx, row in df[col].dropna().items():
+                    st.markdown(f"### 🔹 Κείμενο {idx + 1}")
+                    res = analyze_text(row, lang)
+                    st.markdown(res["emoji_result"])
+
+with tab6:
+    subreddit = st.text_input("🔗 Υποφόρουμ (π.χ. greeklanguage, datascience)", value="datascience")
+    limit = st.slider("Αριθμός posts", 1, 50, 10)
+    if st.button("Φέρε αναρτήσεις από Reddit"):
+        with st.spinner("Φόρτωση..."):
+            posts = fetch_reddit_posts(subreddit, limit)
+            if posts:
+                for i, post in enumerate(posts):
+                    st.markdown(f"### 🧵 Post {i+1}")
+                    res = analyze_text(post, lang)
+                    st.markdown(f"📌 {post}")
+                    st.markdown(res["emoji_result"])
+            else:
+                st.warning("Δεν βρέθηκαν αποτελέσματα.")
