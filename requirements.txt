@@ -1,0 +1,7 @@
+streamlit
+transformers>=4.30.0
+sentence-transformers
+torch
+scikit-learn
+pandas
+spacy
