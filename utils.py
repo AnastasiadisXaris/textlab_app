@@ -1,3 +1,4 @@
+# utils.py
 from transformers import pipeline
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -5,6 +6,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 import numpy as np
 import pandas as pd
+import requests
+import re
 
 sentiment_model = pipeline("sentiment-analysis", model="nlptown/bert-base-multilingual-uncased-sentiment")
 embedding_model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
@@ -50,3 +53,14 @@ def extract_keywords(text: str, lang: str) -> list:
     scores = tfidf_matrix.toarray()[0]
     sorted_keywords = sorted(zip(words, scores), key=lambda x: x[1], reverse=True)
     return [w for w, s in sorted_keywords]
+
+def fetch_reddit_posts(subreddit: str, limit: int = 10) -> list:
+    url = f"https://www.reddit.com/r/{subreddit}/hot.json?limit={limit}"
+    headers = {"User-agent": "TextLabBot 1.0"}
+    try:
+        response = requests.get(url, headers=headers)
+        data = response.json()
+        posts = [post['data']['title'] for post in data['data']['children'] if 'title' in post['data']]
+        return posts
+    except Exception as e:
+        return []
