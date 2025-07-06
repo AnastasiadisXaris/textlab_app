@@ -6,10 +6,7 @@ from utils import analyze_text, compare_texts, cluster_texts, extract_keywords, 
 st.set_page_config(page_title="TextLab", layout="wide")
 st.title("🔍 TextLab - Ανάλυση Κειμένου & Επεξεργασία Φυσικής Γλώσσας")
 
-lang_code = 'gr' if lang == "🇬🇷 Ελληνικά" else 'en'
-# να περνάς lang_code στο utils:
-result = analyze_text(text_input, lang=lang_code)
-keywords = extract_keywords(tfidf_input, lang_code)
+ang = st.radio("Επέλεξε γλώσσα κειμένου:", options=["🇬🇷 Ελληνικά", "🇬🇧 Αγγλικά"])
 
 
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
