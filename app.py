@@ -1,7 +1,7 @@
 # app.py
 import streamlit as st
 import pandas as pd
-from utils import analyze_text, compare_texts, cluster_texts, extract_keywords, fetch_reddit_posts
+from modules.utils import analyze_text, compare_texts, cluster_texts, extract_keywords, fetch_reddit_posts
 
 st.set_page_config(page_title="TextLab", layout="wide")
 st.title("🔍 TextLab - Ανάλυση Κειμένου & Επεξεργασία Φυσικής Γλώσσας")
