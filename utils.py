@@ -9,11 +9,12 @@ import pandas as pd
 import requests
 import re
 
+# Μοντέλα για ανάλυση συναισθήματος και embeddings
 sentiment_model = pipeline("sentiment-analysis", model="nlptown/bert-base-multilingual-uncased-sentiment")
 embedding_model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
 
+
 def analyze_text(text: str, lang: str = 'en') -> dict:
-    # Αν θες, μπορείς να προσαρμόσεις το μοντέλο για γλώσσα ή να το αγνοήσεις προς το παρόν
     sentiment = sentiment_model(text)[0]
     embedding = embedding_model.encode([text])[0]
     emoji_map = {
@@ -35,6 +36,23 @@ def analyze_text(text: str, lang: str = 'en') -> dict:
         }
     }
 
+
+def compare_texts(text1: str, text2: str) -> float:
+    embeddings = embedding_model.encode([text1, text2])
+    similarity = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]
+    return similarity
+
+
+def cluster_texts(texts: list, n_clusters: int = 3) -> dict:
+    embeddings = embedding_model.encode(texts)
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init='auto')
+    labels = kmeans.fit_predict(embeddings)
+    clustered = {}
+    for i, label in enumerate(labels):
+        clustered.setdefault(label, []).append(texts[i])
+    return clustered
+
+
 def extract_keywords(text: str, lang: str = 'en') -> list:
     stop_words = "english" if lang == "en" else None
     tfidf = TfidfVectorizer(stop_words=stop_words, max_features=10)
@@ -55,3 +73,4 @@ def fetch_reddit_posts(subreddit: str, limit: int = 10) -> list:
         return posts
     except Exception as e:
         return []
+
